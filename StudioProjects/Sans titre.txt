@@ -1,0 +1,80 @@
+
+create database owo_db
+
+-- Table `users`
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'cashier') NOT NULL
+);
+
+-- Table `caisses_mere`
+CREATE TABLE caisses_mere (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL UNIQUE,
+    solde_initial DECIMAL(10, 2) NOT NULL
+);
+
+-- Table `caisses_filles`
+CREATE TABLE caisses_filles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL UNIQUE,
+    caisse_mere_id INT,
+    FOREIGN KEY (caisse_mere_id) REFERENCES caisses_mere(id)
+);
+
+-- Table `sous_caisses`
+CREATE TABLE sous_caisses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    type ENUM('Monétaire', 'Virtuel') NOT NULL,
+    solde DECIMAL(10, 2) NOT NULL,
+    caisse_fille_id INT,
+    FOREIGN KEY (caisse_fille_id) REFERENCES caisses_filles(id)
+);
+
+CREATE TABLE transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    montant DECIMAL(10, 2) NOT NULL,
+    type ENUM('Vente', 'Retour') NOT NULL,
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    caisse_fille_id INT,
+    FOREIGN KEY (caisse_fille_id) REFERENCES caisses_filles(id)
+);
+
+CREATE TABLE historique_caisses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    caisse_fille_id INT,
+    ouverture DECIMAL(10, 2),
+    fermeture DECIMAL(10, 2),
+    date_ouverture TIMESTAMP NULL DEFAULT NULL,
+    date_fermeture TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (caisse_fille_id) REFERENCES caisses_filles(id)
+);
+
+
+CREATE TABLE audit_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utilisateur_id INT,
+    action VARCHAR(255) NOT NULL,
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (utilisateur_id) REFERENCES users(id)
+);
+
+ALTER TABLE sous_caisses
+ADD CONSTRAINT chk_solde_non_negatif CHECK (solde >= 0);
+
+CREATE INDEX idx_caisse_fille_id ON sous_caisses(caisse_fille_id);
+CREATE INDEX idx_caisse_mere_id ON caisses_filles(caisse_mere_id);
+
+ALTER TABLE caisses_mere MODIFY solde_initial DECIMAL(15, 2);
+ALTER TABLE sous_caisses MODIFY solde DECIMAL(15, 2);
+
+
+
+
+bon on va voir la partie caissier ici a l'ouverture le caissier doit mettre la date mettre le solde precedent faire le billetage et mettre le fond de la caisse tout ca sera stocker dans la base de donner das quil appuie sur sur le boutton soummettre on le genere un recu qu'il peut imprimer et en appuyant sur le boutton ouvrir la caisse il peut acceder au caisse disponible cree par l'admin qui sont dans la base de donne
+F3n9z8b0s@5u^w#1!k7&$c1d*3q4v%r8h = cle secrete
+
+
+

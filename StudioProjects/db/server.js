@@ -290,6 +290,14 @@ app.get('/caisses-mere', authenticateToken, async (req, res) => {
   }
 });
 
+app.get('/caisses-mere/:id', authenticateToken, (req, res) => {
+  const id = req.params.id;
+  db.query('SELECT * FROM caisses_mere WHERE id = ?', [id], (err, results) => {
+    if (err) throw err;
+    res.json(results[0]);
+  });
+});
+
 // Route pour ajouter une caisse mère
 app.post('/caisses-mere', authenticateToken, isAdmin, async (req, res) => {
   const { nom, solde_initial } = req.body;
@@ -341,45 +349,59 @@ app.delete('/caisses-mere/:id', authenticateToken, isAdmin, async (req, res) => 
 // Route pour récupérer toutes les caisses filles
 app.get('/caisses-filles', authenticateToken, async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM caisses_filles');
+    const connection = await getDbConnection();
+    const [rows] = await connection.query('SELECT * FROM caisses_filles');
+    connection.end();
     res.status(200).json(rows);
   } catch (err) {
     console.error('Erreur lors de la récupération des caisses filles :', err);
-    res.status(500).json({ error: 'Erreur lors de la récupération des caisses filles' });
+    res.status(500).json({ error: 'Erreur lors de la récupération des caisses filles', details: err.message });
   }
 });
 
+
+
 // Route pour ajouter une caisse fille
 app.post('/caisses-filles', authenticateToken, isAdmin, async (req, res) => {
-  const { nom, caisse_mere_id } = req.body;
+  const { nom, nom_caisse_mere, solde } = req.body;
 
-  if (!nom || !caisse_mere_id) {
-    return res.status(400).json({ error: 'Le nom et l\'ID de la caisse mère sont requis.' });
+  if (!nom || !nom_caisse_mere || solde === undefined) {
+    return res.status(400).json({ error: 'Le nom, le nom de la caisse mère, et le solde sont requis.' });
   }
 
   try {
-    const [result] = await db.query('INSERT INTO caisses_filles (nom, caisse_mere_id) VALUES (?, ?)', [nom, caisse_mere_id]);
-    res.status(201).json({ id: result.insertId, nom, caisse_mere_id });
+    const connection = await getDbConnection();
+    const [result] = await connection.query(
+      'INSERT INTO caisses_filles (nom, nom_caisse_mere, solde) VALUES (?, ?, ?)', 
+      [nom, nom_caisse_mere, solde]
+    );
+    connection.end();
+    res.status(201).json({ id: result.insertId, nom, nom_caisse_mere, solde });
   } catch (err) {
-    console.error('Erreur lors de l\'ajout de la caisse fille:', err);
-    res.status(500).json({ error: 'Erreur lors de l\'ajout de la caisse fille' });
+    console.error('Erreur lors de l\'ajout de la caisse fille :', err.message);
+    res.status(500).json({ error: 'Erreur lors de l\'ajout de la caisse fille', details: err.message });
   }
 });
 
 // Route pour mettre à jour une caisse fille
 app.put('/caisses-filles/:id', authenticateToken, isAdmin, async (req, res) => {
   const { id } = req.params;
-  const { nom, caisse_mere_id } = req.body;
+  const { nom, nom_caisse_mere, solde } = req.body;
 
-  if (!nom || !caisse_mere_id) {
-    return res.status(400).json({ error: 'Le nom et l\'ID de la caisse mère sont requis.' });
+  if (!nom || !nom_caisse_mere || solde === undefined) {
+    return res.status(400).json({ error: 'Le nom, le nom de la caisse mère et le solde sont requis.' });
   }
 
   try {
-    await db.query('UPDATE caisses_filles SET nom = ?, caisse_mere_id = ? WHERE id = ?', [nom, caisse_mere_id, id]);
+    const connection = await getDbConnection();
+    await connection.query(
+      'UPDATE caisses_filles SET nom = ?, nom_caisse_mere = ?, solde = ? WHERE id = ?',
+      [nom, nom_caisse_mere, solde, id]
+    );
+    connection.end();
     res.status(200).json({ message: 'Caisse fille mise à jour avec succès.' });
   } catch (err) {
-    console.error('Erreur lors de la mise à jour de la caisse fille:', err);
+    console.error('Erreur lors de la mise à jour de la caisse fille :', err.message);
     res.status(500).json({ error: 'Erreur lors de la mise à jour de la caisse fille' });
   }
 });
@@ -389,13 +411,16 @@ app.delete('/caisses-filles/:id', authenticateToken, isAdmin, async (req, res) =
   const { id } = req.params;
 
   try {
-    await db.query('DELETE FROM caisses_filles WHERE id = ?', [id]);
+    const connection = await getDbConnection();
+    await connection.query('DELETE FROM caisses_filles WHERE id = ?', [id]);
+    connection.end();
     res.status(200).json({ message: 'Caisse fille supprimée avec succès.' });
   } catch (err) {
-    console.error('Erreur lors de la suppression de la caisse fille:', err);
+    console.error('Erreur lors de la suppression de la caisse fille :', err.message);
     res.status(500).json({ error: 'Erreur lors de la suppression de la caisse fille' });
   }
 });
+
 
 
 // Route pour l'ouverture de la caisse

@@ -9,28 +9,28 @@ CREATE TABLE users (
     role ENUM('admin', 'cashier') NOT NULL
 );
 
--- Table `caisses_mere`
+-- Recréer les tables en utilisant la nouvelle définition
+
 CREATE TABLE caisses_mere (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(255) NOT NULL UNIQUE,
     solde_initial DECIMAL(10, 2) NOT NULL
 );
 
--- Table `caisses_filles`
 CREATE TABLE caisses_filles (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(255) NOT NULL UNIQUE,
-    caisse_mere_id INT,
-    FOREIGN KEY (caisse_mere_id) REFERENCES caisses_mere(id)
+    nom VARCHAR(255) NOT NULL,
+    nom_caisse_mere VARCHAR(255) NOT NULL,
+    solde DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (nom_caisse_mere) REFERENCES caisses_mere(nom) ON DELETE CASCADE
 );
 
--- Table `sous_caisses`
 CREATE TABLE sous_caisses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     type ENUM('Monétaire', 'Virtuel') NOT NULL,
     solde DECIMAL(10, 2) NOT NULL,
     caisse_fille_id INT,
-    FOREIGN KEY (caisse_fille_id) REFERENCES caisses_filles(id)
+    FOREIGN KEY (caisse_fille_id) REFERENCES caisses_filles(id) ON DELETE CASCADE
 );
 
 CREATE TABLE transactions (
@@ -39,7 +39,7 @@ CREATE TABLE transactions (
     type ENUM('Vente', 'Retour') NOT NULL,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     caisse_fille_id INT,
-    FOREIGN KEY (caisse_fille_id) REFERENCES caisses_filles(id)
+    FOREIGN KEY (caisse_fille_id) REFERENCES caisses_filles(id) ON DELETE CASCADE
 );
 
 CREATE TABLE historique_caisses (
@@ -49,16 +49,15 @@ CREATE TABLE historique_caisses (
     fermeture DECIMAL(10, 2),
     date_ouverture TIMESTAMP NULL DEFAULT NULL,
     date_fermeture TIMESTAMP NULL DEFAULT NULL,
-    FOREIGN KEY (caisse_fille_id) REFERENCES caisses_filles(id)
+    FOREIGN KEY (caisse_fille_id) REFERENCES caisses_filles(id) ON DELETE CASCADE
 );
-
 
 CREATE TABLE audit_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
     utilisateur_id INT,
     action VARCHAR(255) NOT NULL,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (utilisateur_id) REFERENCES users(id)
+    FOREIGN KEY (utilisateur_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 ALTER TABLE sous_caisses
@@ -72,9 +71,6 @@ ALTER TABLE sous_caisses MODIFY solde DECIMAL(15, 2);
 
 
 
-
-bon on va voir la partie caissier ici a l'ouverture le caissier doit mettre la date mettre le solde precedent faire le billetage et mettre le fond de la caisse tout ca sera stocker dans la base de donner das quil appuie sur sur le boutton soummettre on le genere un recu qu'il peut imprimer et en appuyant sur le boutton ouvrir la caisse il peut acceder au caisse disponible cree par l'admin qui sont dans la base de donne
-F3n9z8b0s@5u^w#1!k7&$c1d*3q4v%r8h = cle secrete
 
 
 

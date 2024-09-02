@@ -1,13 +1,13 @@
 class CaisseFille {
   final int id;
   final String nom;
-  final int caisseMereId;
+  final String nomCaisseMere;
   final double solde;
 
   CaisseFille({
     required this.id,
     required this.nom,
-    required this.caisseMereId,
+    required this.nomCaisseMere,
     required this.solde,
   });
 
@@ -15,7 +15,7 @@ class CaisseFille {
     return CaisseFille(
       id: json['id'],
       nom: json['nom'],
-      caisseMereId: json['caisse_mere_id'],
+      nomCaisseMere: json['nom_caisse_mere'],
       solde: (json['solde'] as num).toDouble(),
     );
   }
@@ -24,7 +24,7 @@ class CaisseFille {
     return {
       'id': id,
       'nom': nom,
-      'caisse_mere_id': caisseMereId,
+      'nom_caisse_mere': nomCaisseMere,
       'solde': solde,
     };
   }

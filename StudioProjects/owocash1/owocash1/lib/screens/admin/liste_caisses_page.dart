@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:owocash/models/caisse_mere.dart';
 import 'package:owocash/models/caisse_fille.dart';
 import 'gestion_caisses_page.dart';
+import 'package:owocash/services/auth_service.dart';
 
 class ListeCaissesPage extends StatelessWidget {
   Future<List<CaisseMere>> fetchCaissesMere() async {
-    final response = await http.get(Uri.parse('http://localhost:3000/caisses-mere'));
+    final response = await AuthService.get('http://localhost:3000/caisses-mere');
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((item) => CaisseMere.fromJson(item)).toList();
@@ -17,7 +17,7 @@ class ListeCaissesPage extends StatelessWidget {
   }
 
   Future<List<CaisseFille>> fetchCaissesFilles(int caisseMereId) async {
-    final response = await http.get(Uri.parse('http://localhost:3000/caisses-filles?caisseMereId=$caisseMereId'));
+    final response = await AuthService.get('http://localhost:3000/caisses-filles?caisseMereId=$caisseMereId');
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((item) => CaisseFille.fromJson(item)).toList();
@@ -77,10 +77,23 @@ class ListeCaissesPage extends StatelessWidget {
                                     children: caissesFilles.map((caisseFille) {
                                       return ListTile(
                                         title: Text(caisseFille.nom),
+                                        subtitle: Text('Solde: ${caisseFille.solde}'),
                                       );
                                     }).toList(),
                                   );
                                 }
+                              },
+                            ),
+                            ListTile(
+                              title: Text('Ajouter une caisse fille'),
+                              trailing: Icon(Icons.add),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => GestionCaissesPage(caisseMereId: caisseMere.id),
+                                  ),
+                                );
                               },
                             ),
                           ],
@@ -98,10 +111,13 @@ class ListeCaissesPage extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => GestionCaissesPage()),
+            MaterialPageRoute(
+              builder: (context) => GestionCaissesPage(),
+            ),
           );
         },
         child: Icon(Icons.add),
+        tooltip: 'Ajouter une caisse mère',
       ),
     );
   }
